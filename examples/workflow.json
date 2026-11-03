@@ -1,0 +1,7 @@
+{
+  "name": "Prepare a local content brief",
+  "steps": [
+    {"action": "trim", "text": "  Draft a holiday-home description.  "},
+    {"action": "word_count", "text": "A synthetic example brief", "requires_approval": true}
+  ]
+}

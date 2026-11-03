@@ -17,7 +17,7 @@ python -m openagent demo
 python -m unittest discover -s tests -v
 ```
 
-The demo pauses before a sensitive action and requires an explicit approval before resuming.
+The demo prints the gate and then automatically simulates approval; it is not interactive. For an explicit command-line decision, use the JSON runner below.
 
 ## Concepts
 
@@ -44,3 +44,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to help.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Run your own JSON workflow
+
+```sh
+python -m openagent run examples/workflow.json
+# Exits 3 at the approval gate, with only ungated results.
+python -m openagent run examples/workflow.json --approve
+# Exits 0 after explicitly approving all gates in this invocation.
+```
+
+The JSON runner performs real local `trim`, `uppercase`, and `word_count` operations. Each step has `action`, `text`, and optional boolean `requires_approval`. It rejects unknown fields/actions and never executes arbitrary code. Steps are independent; results are ordered rather than automatically passed to later steps. Output is JSON for inspection or redirection to a local file. Exit 2 indicates invalid input.
+
+Re-running starts a new in-memory workflow; there is no persistence, retry, identity verification or remote publishing. `--approve` approves all gates for that invocation. The Python API is trusted local code: callers can mutate workflow state, so approval gates are not a security boundary against hostile callers. Use only synthetic/local non-sensitive inputs.

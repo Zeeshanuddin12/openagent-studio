@@ -1,12 +1,28 @@
-"""Usage: python -m openagent demo"""
+"""Usage: python -m openagent demo | run FILE [--approve]"""
+import argparse
+from pathlib import Path
+from .runner import execute
 import json
 import sys
 from .engine import Engine, Step, Workflow
 
 
 def main() -> int:
+    if sys.argv[1:2] == ["run"]:
+        parser = argparse.ArgumentParser(description="Run a JSON workflow with built-in local text operations")
+        parser.add_argument("command", choices=["run"])
+        parser.add_argument("file", type=Path)
+        parser.add_argument("--approve", action="store_true", help="Explicitly approve all gates in this invocation")
+        args = parser.parse_args()
+        try:
+            result = execute(json.loads(args.file.read_text()), approve=args.approve)
+        except (OSError, ValueError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 2
+        print(json.dumps(result, indent=2))
+        return 0 if result["status"] == "completed" else 3
     if sys.argv[1:] != ["demo"]:
-        print("Usage: python -m openagent demo")
+        print("Usage: python -m openagent demo | run FILE [--approve]")
         return 2
     engine = Engine()
     engine.register("research", lambda action, data: {
